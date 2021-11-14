@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 (2021-11-14)
+
+### Changed
+
+* Feed BeautifulSoup the request raw content to give it a chance to figure out the proper character encoding.
+
 ## 0.2.0 (2018-03-20)
 
 ### Changed
