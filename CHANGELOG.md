@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+* Python 3.10 or newer is now required.
+
 ## 0.2.1 (2021-11-14)
 
 ### Changed

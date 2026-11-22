@@ -8,7 +8,7 @@ Fork of [HenrikOssipoff/python-opengraph](https://github.com/HenrikOssipoff/pyth
 
 ## Compatability
 
-Python 3.4+
+Python 3.10+
 
 Other versions may work, but testing is only done against the above versions.
 
@@ -44,7 +44,7 @@ Any parser supported by BeautifulSoup can be passed in, assuming it is installed
 
 ## Development
 
-Create a Python 3.4+ virtualenv and then:
+Create a Python 3.10+ virtualenv and then:
 
     pip install -r dev-requirements.txt
 
