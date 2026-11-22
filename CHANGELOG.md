@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+* Better protection against hanging forever while fetching some urls which stream data.
+
 ## 0.2.1 (2021-11-14)
 
 ### Changed
