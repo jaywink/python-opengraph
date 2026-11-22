@@ -1,5 +1,6 @@
 import logging
 import re
+import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -13,9 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 class OpenGraph:
-    def __init__(self, url=None, html=None, useragent=None, parser="html.parser", timeout=10):
+    def __init__(self, url=None, html=None, useragent=None, parser="html.parser", timeout=10, max_seconds=15,
+                 max_bytes=1024 * 1024):
         self._data = {}
         self.timeout = timeout
+        self.max_seconds = max_seconds
+        self.max_bytes = max_bytes
         self.headers = {
             "user-agent": useragent or USER_AGENT,
         }
@@ -49,16 +53,34 @@ class OpenGraph:
     def _fetch(self, url):
         if not re.search(r"^https?://", url):
             return
+        started = time.monotonic()
         content_type = self._fetch_content_type(url)
-        if not content_type.startswith('text/html'):
+        if not content_type.lower().startswith('text/html'):
             return
         try:
-            response = requests.get(url, headers=self.headers, timeout=self.timeout)
+            with requests.get(url, headers=self.headers, timeout=self.timeout, stream=True) as response:
+                # Check the content type again due to some servers claiming text/html for HEAD only, for example
+                # some audio streams.
+                content_type = response.headers.get("Content-Type", "").lower()
+                if not response.ok or not content_type.startswith("text/html"):
+                    return
+                html = b""
+                # Loop through the response until we either parse through the whole response,
+                # or reach max bytes or max seconds.
+                while len(html) < self.max_bytes:
+                    if time.monotonic() - started > self.max_seconds:
+                        logger.debug("_fetch - %s took too long, skipping", url)
+                        return
+                    # Read a part of the data, to avoid the remote server making us hang due to
+                    # trickling data, like an audio stream.
+                    data = response.raw.read1(16 * 1024, decode_content=True)
+                    if not data:
+                        break
+                    html += data
+                return html
         except RequestException as ex:
             logger.debug("_fetch - %s when fetching url %s", ex, url)
             return
-        else:
-            return response.content
 
     def _parse(self, html, parser):
         if not html:
